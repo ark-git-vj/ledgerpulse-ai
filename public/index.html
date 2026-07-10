@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LedgerPulse AI - Credit Analytics</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text); padding: 16px; display: flex; justify-content: center; }
+        .app-container { width: 100%; max-width: 600px; background: var(--card-bg); border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); padding: 20px; min-height: 90vh; display: flex; flex-direction: column; }
+        
+        header { margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+        header h1 { font-size: 1.5rem; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        header p { font-size: 0.875rem; color: var(--text-light); margin-top: 4px; }
+
+        .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; flex-shrink: 0; }
+        label { font-size: 0.875rem; font-weight: 600; color: var(--text); }
+        textarea { width: 100%; height: 120px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; resize: none; font-size: 0.9rem; outline: none; transition: border 0.2s; }
+        textarea:focus { border-color: var(--primary); }
+        
+        button { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
+        button:hover { background: var(--primary-hover); }
+        button:disabled { background: var(--border); cursor: not-allowed; }
+
+        .output-container { flex-grow: 1; border: 1px solid var(--border); border-radius: 8px; padding: 16px; background: #fafafa; overflow-y: auto; font-size: 0.95rem; line-height: 1.6; }
+        .placeholder-text { color: var(--text-light); font-style: italic; text-align: center; margin-top: 40px; }
+        
+        .output-container h3 { margin: 16px 0 8px 0; color: #0f172a; font-size: 1.1rem; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+        .output-container h3:first-child { margin-top: 0; }
+        .output-container ul { margin-left: 20px; margin-bottom: 12px; }
+        .output-container li { margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header>
+        <h1>📊 LedgerPulse AI</h1>
+        <p>Smart Credit & Cash-Flow Analytics for Small Businesses</p>
+    </header>
+
+    <div class="input-group">
+        <label for="ledgerData">Paste Raw Transaction Logs / Credit Notes:</label>
+        <textarea id="ledgerData" placeholder="Example:
+Rahul took 5000 credit on 12 June, paid back 2000 on 20 June.
+Amit owes 12000 since May and isn't answering calls.
+Shop sales today: 8000 cash."></textarea>
+        <button id="analyzeBtn" onclick="startAnalysis()">Analyze Data</button>
+    </div>
+
+    <label>AI Insights & Action Plan:</label>
+    <div id="output" class="output-container">
+        <div class="placeholder-text">Analysis insights will stream here in real-time...</div>
+    </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
