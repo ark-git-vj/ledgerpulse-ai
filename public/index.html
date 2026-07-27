@@ -3,67 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LedgerPulse AI - Credit Analytics</title>
-    <style>
-        :root {
-            --bg-color: #f4f6f9;
-            --card-bg: #ffffff;
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --text: #1e293b;
-            --text-light: #64748b;
-            --border: #e2e8f0;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text); padding: 16px; display: flex; justify-content: center; }
-        .app-container { width: 100%; max-width: 600px; background: var(--card-bg); border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); padding: 20px; min-height: 90vh; display: flex; flex-direction: column; }
-        
-        header { margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
-        header h1 { font-size: 1.5rem; color: var(--primary); display: flex; align-items: center; gap: 8px; }
-        header p { font-size: 0.875rem; color: var(--text-light); margin-top: 4px; }
-
-        .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; flex-shrink: 0; }
-        label { font-size: 0.875rem; font-weight: 600; color: var(--text); }
-        textarea { width: 100%; height: 120px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; resize: none; font-size: 0.9rem; outline: none; transition: border 0.2s; }
-        textarea:focus { border-color: var(--primary); }
-        
-        button { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
-        button:hover { background: var(--primary-hover); }
-        button:disabled { background: var(--border); cursor: not-allowed; }
-
-        .output-container { flex-grow: 1; border: 1px solid var(--border); border-radius: 8px; padding: 16px; background: #fafafa; overflow-y: auto; font-size: 0.95rem; line-height: 1.6; }
-        .placeholder-text { color: var(--text-light); font-style: italic; text-align: center; margin-top: 40px; }
-        
-        .output-container h3 { margin: 16px 0 8px 0; color: #0f172a; font-size: 1.1rem; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
-        .output-container h3:first-child { margin-top: 0; }
-        .output-container ul { margin-left: 20px; margin-bottom: 12px; }
-        .output-container li { margin-bottom: 4px; }
-    </style>
+    <title>LedgerPulse AI - Credit & Cash-Flow Analytics</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Marked.js for Markdown Parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- jsPDF for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Glow backgrounds for premium ambient blur effect -->
+    <div class="glow-bg glow-1"></div>
+    <div class="glow-bg glow-2"></div>
+    
+    <div class="app-wrapper">
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="logo-icon-container">
+                    <i data-lucide="trending-up" class="logo-icon"></i>
+                </div>
+                <div>
+                    <h1>LedgerPulse AI</h1>
+                    <p>Advanced Credit Risk & Cash-Flow Analytics</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button id="historyBtn" class="btn-secondary" onclick="toggleHistory()">
+                    <i data-lucide="history"></i> History
+                </button>
+            </div>
+        </header>
 
-<div class="app-container">
-    <header>
-        <h1>📊 LedgerPulse AI</h1>
-        <p>Smart Credit & Cash-Flow Analytics for Small Businesses</p>
-    </header>
+        <main class="app-main">
+            <!-- Left Panel: Input Section -->
+            <section class="panel-card input-panel">
+                <div class="panel-header">
+                    <i data-lucide="file-text"></i>
+                    <h2>Ledger Input</h2>
+                </div>
 
-    <div class="input-group">
-        <label for="ledgerData">Paste Raw Transaction Logs / Credit Notes:</label>
-        <textarea id="ledgerData" placeholder="Example:
-Rahul took 5000 credit on 12 June, paid back 2000 on 20 June.
-Amit owes 12000 since May and isn't answering calls.
-Shop sales today: 8000 cash."></textarea>
-        <button id="analyzeBtn" onclick="startAnalysis()">Analyze Data</button>
+                <div class="input-group">
+                    <label class="input-label">Choose a pre-filled sample:</label>
+                    <div class="preset-selector-row">
+                        <select id="exampleSelect" aria-label="Examples">
+                            <option value="">— Select an Example —</option>
+                            <option value="Rahul took 5000 credit on 12 June, paid back 2000 on 20 June.\nAmit owes 12000 since May and isn't answering calls.\nShop sales today: 8000 cash.">Mixed Shop Ledger</option>
+                            <option value="Customer A: invoice #123, 1500 unpaid since Apr. Customer B: invoice #124, 200 paid last week.">Overdue Invoices</option>
+                            <option value="Multiple partial payments: Rahul paid 200, owed 4800; Anita paid 0, owed 12000; recurring late payments from vendor X.">Partial Payments Log</option>
+                        </select>
+                        <button class="btn-accent" onclick="loadExample()">
+                            <i data-lucide="download-cloud"></i> Load
+                        </button>
+                    </div>
+                </div>
+
+                <div class="input-group inline-controls">
+                    <div class="control-grid">
+                        <div class="control-card">
+                            <label class="input-label" for="shopContext">Shop / Branch</label>
+                            <select id="shopContext" onchange="selectContext(event)"></select>
+                        </div>
+                        <div class="control-card">
+                            <label class="input-label">Voice Input</label>
+                            <div class="voice-control-row">
+                                <button id="voiceBtn" class="btn-secondary" onclick="toggleVoiceInput()">
+                                    <i data-lucide="mic"></i> Start Voice
+                                </button>
+                                <span id="voiceStatus" class="voice-status">Tap to dictate transaction notes</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="label-row">
+                        <label class="input-label" for="ledgerData">Paste Raw transaction logs / credit details:</label>
+                        <button class="btn-text" onclick="clearInput()">Clear</button>
+                    </div>
+                    <textarea id="ledgerData" placeholder="Enter transactions (e.g. 'Jane bought $120 on tab, paid $50...')"></textarea>
+                </div>
+
+                <!-- Multimodal File Upload Box -->
+                <div class="input-group">
+                    <label class="input-label">Or Upload Document / Receipt / Image:</label>
+                    <div id="dropzone" class="upload-dropzone">
+                        <input type="file" id="fileInput" accept="image/*,application/pdf" class="hidden" onchange="handleFileSelect(event)">
+                        <i data-lucide="upload-cloud" class="upload-icon"></i>
+                        <span class="upload-text">Drag & drop receipt/ledger or <span class="browse-link">browse</span></span>
+                        <span class="upload-subtext">Supports JPG, PNG, WEBP, PDF</span>
+                    </div>
+                    <div id="filePreviewContainer" class="file-preview-bar hidden">
+                        <div class="file-info">
+                            <i data-lucide="file" class="preview-icon"></i>
+                            <span id="fileNameDisplay" class="file-name">receipt.jpg</span>
+                        </div>
+                        <button class="btn-icon-danger" onclick="clearSelectedFile()" aria-label="Remove file">
+                            <i data-lucide="x"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="action-buttons-row">
+                    <button id="analyzeBtn" class="btn-primary" onclick="startAnalysis()">
+                        <i data-lucide="zap"></i> Analyze Ledger
+                    </button>
+                    <button id="downloadBtn" class="btn-secondary" onclick="downloadReport('txt')" disabled>
+                        <i data-lucide="download"></i> Download Summary
+                    </button>
+                    <button id="downloadPdfBtn" class="btn-secondary" onclick="downloadReport('pdf')" disabled>
+                        <i data-lucide="file-text"></i> Export PDF
+                    </button>
+                    <button id="downloadCsvBtn" class="btn-secondary" onclick="downloadReport('csv')" disabled>
+                        <i data-lucide="layers"></i> Export CSV
+                    </button>
+                </div>
+            </section>
+
+            <!-- Right Panel: Analytics Results -->
+            <section class="panel-card output-panel glass-card">
+                <div class="panel-header">
+                    <i data-lucide="sparkles" class="sparkles-icon"></i>
+                    <h2>AI Insights & Action Plan</h2>
+                </div>
+                
+                <div id="metricCards" class="metric-cards"></div>
+                <div id="output" class="output-content">
+                    <div class="placeholder-text-container">
+                        <i data-lucide="line-chart" class="placeholder-icon"></i>
+                        <p class="placeholder-text">Real-time analysis insights will stream here...</p>
+                    </div>
+                </div>
+            </section>
+        </main>
     </div>
 
-    <label>AI Insights & Action Plan:</label>
-    <div id="output" class="output-container">
-        <div class="placeholder-text">Analysis insights will stream here in real-time...</div>
-    </div>
-</div>
+    <!-- History Overlay Sidebar -->
+    <aside id="historyPanel" class="history-sidebar hidden">
+        <div class="history-header">
+            <h3><i data-lucide="clock"></i> Query History</h3>
+            <button class="btn-close" onclick="toggleHistory(false)" aria-label="Close history">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+        <div class="history-filters">
+            <input id="historySearch" type="search" placeholder="Search customer, status, or note..." oninput="renderHistory()">
+            <div class="filter-row">
+                <select id="historyDateRange" onchange="renderHistory()">
+                    <option value="all">All Dates</option>
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                    <option value="30days">Last 30 Days</option>
+                </select>
+                <select id="historyContextFilter" onchange="renderHistory()">
+                    <option value="all">All Shops</option>
+                </select>
+            </div>
+        </div>
+        <div id="historyList" class="history-list">
+            <div class="empty-history">No history yet.</div>
+        </div>
+        <div class="history-footer">
+            <button class="btn-danger w-full" onclick="clearHistory()">
+                <i data-lucide="trash-2"></i> Clear History
+            </button>
+        </div>
+    </aside>
 
-<script src="app.js"></script>
+    <div id="spinner" class="spinner-overlay hidden">
+        <div class="spinner-card">
+            <div class="pulse-ring"></div>
+            <span class="spinner-text">Analyzing Cashflow...</span>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
 </body>
 </html>
